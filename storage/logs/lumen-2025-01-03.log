@@ -1,0 +1,19 @@
+[2025-01-03 09:37:43] testing.ERROR: Call to undefined method GDocAPI\Services\AuthService::ValidarRoles() {"exception":"[object] (Error(code: 0): Call to undefined method GDocAPI\\Services\\AuthService::ValidarRoles() at C:\\xampp\\htdocs\\gdocapi\\src\\Controllers\\FileController.php:156)
+[stacktrace]
+#0 [internal function]: GDocAPI\\Controllers\\FileController::descargarDocumentosPDF()
+#1 C:\\xampp\\htdocs\\gdocapi\\src\\Controllers\\Controller.php(18): call_user_func_array(Array, Array)
+#2 C:\\xampp\\htdocs\\gdocapi\\src\\Routes\\fileRouter.php(17): GDocAPI\\Controllers\\Controller::execute('descargarDocume...', 200)
+#3 C:\\xampp\\htdocs\\gdocapi\\vendor\\illuminate\\container\\BoundMethod.php(36): Closure->{closure}()
+#4 C:\\xampp\\htdocs\\gdocapi\\vendor\\illuminate\\container\\Util.php(40): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#5 C:\\xampp\\htdocs\\gdocapi\\vendor\\illuminate\\container\\BoundMethod.php(81): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#6 C:\\xampp\\htdocs\\gdocapi\\vendor\\illuminate\\container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Laravel\\Lumen\\Application), Object(Closure), Object(Closure))
+#7 C:\\xampp\\htdocs\\gdocapi\\vendor\\illuminate\\container\\Container.php(653): Illuminate\\Container\\BoundMethod::call(Object(Laravel\\Lumen\\Application), Object(Closure), Array, NULL)
+#8 C:\\xampp\\htdocs\\gdocapi\\vendor\\laravel\\lumen-framework\\src\\Concerns\\RoutesRequests.php(302): Illuminate\\Container\\Container->call(Object(Closure), Array)
+#9 C:\\xampp\\htdocs\\gdocapi\\vendor\\laravel\\lumen-framework\\src\\Concerns\\RoutesRequests.php(267): Laravel\\Lumen\\Application->callActionOnArrayBasedRoute(Array)
+#10 C:\\xampp\\htdocs\\gdocapi\\vendor\\laravel\\lumen-framework\\src\\Concerns\\RoutesRequests.php(169): Laravel\\Lumen\\Application->handleFoundRoute(Array)
+#11 C:\\xampp\\htdocs\\gdocapi\\vendor\\laravel\\lumen-framework\\src\\Concerns\\RoutesRequests.php(429): Laravel\\Lumen\\Application->Laravel\\Lumen\\Concerns\\{closure}(Object(Laravel\\Lumen\\Http\\Request))
+#12 C:\\xampp\\htdocs\\gdocapi\\vendor\\laravel\\lumen-framework\\src\\Concerns\\RoutesRequests.php(165): Laravel\\Lumen\\Application->sendThroughPipeline(Array, Object(Closure))
+#13 C:\\xampp\\htdocs\\gdocapi\\vendor\\laravel\\lumen-framework\\src\\Concerns\\RoutesRequests.php(112): Laravel\\Lumen\\Application->dispatch(NULL)
+#14 C:\\xampp\\htdocs\\gdocapi\\public\\index.php(13): Laravel\\Lumen\\Application->run()
+#15 {main}
+"} 

@@ -1,0 +1,322 @@
+# site_<site>.yaml
+# Configuración del site.. 
+# Define el comportamiento de la API para adaptarse al un site especifico.
+
+# Host del site
+server: servidor.domain
+
+# Origin configurado en Alfresco (CORS)
+origin: https://{server}
+
+# ID del nodo principal del site
+nodo_raiz_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxx
+
+# Path de busqueda
+path: app:company_home/st:sites/cm:clinico/cm:documentLibrary//*
+
+# URLs autenticación, busqueda y core
+url_buscar: https://{server}/alfresco/api/-default-/public/search/versions/1/search
+url_rutas: https://{server}/alfresco/api/-default-/public/alfresco/versions/1/
+
+# Tipos de nodo folder (identidad, tipo de docuemento)
+nodo_tipos: 
+  - NODO_TIPO_ID
+  - NODO_TIPO_CARPETA
+
+# Si en el nombre del nodo de la carpeta ID está el nombre del trabajador/paciente
+# nos interesa extraerlo para setearlo en algún parámetro del archivo que subamos,
+# por lo que estableceremos este parámetro con el nombre de la key del POST. Sino, lo pondremos a 0.
+# Esto es útil ya que es posible que tengamos un nodo-folder tipo ID ya creado y que contenga 
+# el nombre de la persona. Si en el POST recibimos un nombre ligeramente distinto, si tenemos 
+# esta variable a 0, en el parámetro del archivo se pondrá un nombre diferente al de la carpeta.
+# P.e: capeta 12345678A_MARIA ANTONIA; recibimos por POST: nombre: M. ANTONIA
+# La función del código fuente normalizará el nombre en el mismo POST
+nombre_en_nodo_id: [0]
+
+# Nombre del nodo tipo ID (paciente, trabajador)
+# Array con texto a reemplazar y array con variables con cuyo valor se reemplaza [txt_buscado, variable]
+# La variables son las pasadas en el $_POST
+nodo_tipo_id_nombre:
+  - SIP
+  - 0: [SIP, identidad]
+
+# Parámetros del nodo tipo ID (paciente, trabajador...)
+# reemplazos contiene las keys a reemplazar. El formato es:
+# 0 - key a reemplazar
+# 1 - key de nivel inferior
+# 2 - variable del código que contiene el valor
+# 3 - se hace split del valor de la variable con el caracter definido
+# 4 - si se hace split, posicion en el array del valor
+nodo_tipo_id:
+  name: 
+  nodeType: cm:folder
+  reemplazos:
+    0: [name, "", nodoNombre, "", 0]
+  
+# Parámetros del nodo tipo CARPETA (tipo documento...)
+# reemplazos contiene las keys a reemplazar. El formato es:
+# 0 - key a reemplazar
+# 1 - key de nivel inferior
+# 2 - variable del código que contiene el valor
+# 3 - sin uso
+# 4 - 0: la variable está definida en el código
+#   - 1: la variable está definida en el $_POST
+nodo_tipo_carpeta:
+  name: 
+  nodeType: cm:folder
+  reemplazos:
+    0: [name, "", nodoNombre, "", 0]
+
+
+
+# Parámetros a mapear de $_POST (necesarios para el formdata)
+form_data_post_params: ["fecha", "hora", "episodio", "diagnostico", "servicio"]
+
+# Parámetros del form data para enviar archivos
+# reemplazos contiene las keys a reemplazar. El formato es:
+#   0 - key a reemplazar
+#   1 - key de nivel inferior
+#   2 - variable del código que contiene el valor
+#   3 - se hace split del valor de la variable con el caracter definido
+#   4 - si se hace split, posicion en el array del valor
+#   5 - 0 es una variable del código; 1 es una variable del POST
+# Si es necesaria fecha de alfresco, es la variable "fecha_alf" del código 
+form_data_file:
+  nodeType: cm:content
+  autoRename: "true"
+  gvasan:pm_prueba_tipo_documento: 
+  gvasan:pm_prueba_agrupacion: 
+  gvasan:pm_fic_creacion: 
+  gvasan:pm_paci_sip:
+  gvasan:pm_prueba_episodio:
+  gvasan:pm_episodio_diagnostico:
+  gvasan:pm_prueba_servicio:
+  gvasan:pm_documento_origen:
+  name: 
+  reemplazos:
+    0: [gvasan:pm_prueba_tipo_documento,  "", tipo_documento,   "" , 0, 1]
+    1: [gvasan:pm_prueba_agrupacion,      "", nodeType,         "" , 0, 0]
+    2: [gvasan:pm_fic_creacion,           "", fecha_alf,        "" , 0, 0]
+    3: [gvasan:pm_paci_sip,               "", identidad,        "" , 0, 1]
+    4: [gvasan:pm_prueba_episodio,        "", episodio,         "" , 0, 0]
+    5: [gvasan:pm_episodio_diagnostico,   "", diagnostico,      "" , 0, 0]
+    6: [gvasan:pm_prueba_servicio,        "", servicio,         "" , 0, 0]
+    7: [name,                             "", nombreArchivo,    "" , 0, 0]
+    8: [cm:title,                         "", nombreArchivo,    "" , 0, 0]
+    9: [gvasan:pm_documento_origen,       "", documento_origen, "" , 0, 1]
+
+# Nombre del archivo que se envia a Alfresco
+file_nombre: SIP_SERVICIO_TIPO_FECHA_HORA.pdf
+
+# Reemplazos en el nombre de archivo por las variables definidas
+# file_nombre_replace:
+#   0: [SIP, identidad]
+#   1: [SERVICIO, servicio]
+#   2: [TIPO, tipo_documento]
+#   3: [FECHA, fecha]
+#   4: [HORA, hora]
+file_nombre_replace:
+  '0':
+    - SIP
+    - identidad
+  '1':
+    - SERVICIO
+    - servicio
+    - formateos:
+      - acentos
+      - mayusculas
+  '2':
+    - TIPO
+    - tipo_documento
+  '3':
+    - FECHA
+    - fecha
+  '4':
+    - HORA
+    - hora
+
+
+# Normaliza la parte del nombre, obtenido del $_POST, que se asignara al archivo.
+# Estructura:
+# > preproceso (opcional): array con procesados de texto previo a la clasificación: 
+#       - acentos: quita acentos
+#       - mayusculas: texto a mayúsculas
+#       - minusculas: texto a minusculas
+#       - capitalizer: capitalizar texto (primera mayúscula)
+# > tipo (opcional):  
+#       - diccionario con los valores correctos, según la key ($_POST[$tipo_documento])
+#         si no está seteado se adoptará el nombre del $_POST      
+#       - si se especifica como valor <procesado de texto> (p.e: <acentos>,<capitalizar>, etc...)
+#         realizará ese procesado al texto original y/o preprocesado, devolviendo ese resultado.
+normalizar_file_nombre:
+  preproceso:
+    - capitalizar
+
+# Obtiene el tipo de nodo para asignárselo al archivo.
+# Estructura:
+# > tipo: especificar array o diccionario
+# > parametro (obligatorio): parametro del $_POST que se usa para la comparación
+# > preproceso (opcional): array con procesados de texto previo a la clasificación: 
+#       - acentos: quita acentos
+#       - mayusculas: texto a mayúsculas
+#       - minusculas: texto a minusculas
+#       - capitalizer: capitalizar texto (primera mayúscula)
+# > correspondencia (obligatorio):  
+#       - array o diccionario con valores a comparar según el valor del parametro
+#       - Estructura:
+#         ARRAY: > Valor a devolver
+#                  - Array de valores a comparar (si lo encuentra devuelve el valor de su padre)
+#         DICCIONARIO : > Key de busqueda: valor a devolver
+obtener_tipodoc_nodetype:
+  tipo: array
+  parametro: tipo_documento
+  preproceso:
+    - acentos
+    - mayusculas
+  correspondencia:
+    Documentación clínica:
+      - CONSENTIMIENTO INFORMADO
+      - ENFERMERIA
+      - ENFERMERÍA
+      - FICHA FISIOTERAPIA
+      - GRÁFICAS UCI
+      - GRAFICAS UCI
+      - INTERCONSULTAS
+      - MATERIAL QUIRÚRGICO
+      - MATERIAL QUIRURGICO
+      - ÓRDENES Y TRATAMIENTOS
+      - ORDENES Y TRATAMIENTOS
+      - PROPUESTA/SOLICITUD PRUEBA
+      - RESOLUCIONES
+      - SOLICITUD A FACULTATIVO
+    Informes:
+      - ANAMNESIS
+      - BLOQUE OBSTÉTRICO Y REGISTRO DE PARTO
+      - BLOQUE OBSTÉTRICO Y REGISTRO DE PARTO                
+      - CONSULTAS OFTALMOLOGÍA
+      - CONSULTAS OFTALMOLOGIA
+      - DOCUMENTACIÓN QUIRÓFANO
+      - DOCUMENTACION QUIROFANO
+      - EVOLUCIÓN
+      - EVOLUCION
+      - HISTORIA CLÍNICA
+      - HISTORIA CLINICA
+      - HISTORIA Y CURSO CLÍNICO
+      - INFORME
+      - INFORME ALTA
+      - INFORME CLÍNICO
+      - INFORME CLINICO
+      - INFORME EXTERNO
+      - INFORME URGENCIAS
+      - NECROPSIA
+      - PARTOGRAMA
+    Otros:
+      - PARTE JUDICIAL
+      - COMISIÓN GARANTÍA Y CALIDAD
+      - COMISION GARANTIA Y CALIDAD
+      - DESCONOCIDO
+      - DOCUMENTACIÓN
+      - DOCUMENTACION
+      - DOCUMENTACIÓN ADMINISTRATIVA
+      - DOCUMENTACION ADMINISTRATIVA
+      - RATIFICACIÓN INTERNAMIENTO
+      - RATIFICACION INTERNAMIENTO
+    default:
+      Procedimientos y técnicas
+
+# Obtiene el nombre del nodo tipo carpeta (tipo de documento).
+# Estructura:
+# > parametro (obligatorio): parametro del $_POST que se usa para la comparación
+# > preproceso (opcional): array con procesados de texto previo a la clasificación: 
+#       - acentos: quita acentos
+#       - mayusculas: texto a mayúsculas
+#       - minusculas: texto a minusculas
+#       - capitalizer: capitalizar texto (primera mayúscula)
+# > tipo (opcional):  
+#       - array con array de valores a comparar según el valor del parametro
+#       - Estructura:
+#         > Valor a devolver
+#           - Array de valores a comparar (si lo encuentra devuelve el valor de su padre)
+obtener_tipodoc_nombre:
+  parametro: tipo_documento
+  preproceso:
+    - capitalizar
+
+# Se definen los campos de consulta que tendra la llamada a metadata y pdf
+# - "plantilla" -> Se definen los valores constantes, es decir, la estrucutra de la consulta AFTS (Alfresco Full Text Search)
+# - "inserciones" -> Se definen en forma de array las variables de consulta con el siguiente formato
+#   - [a, b, c, d]
+#     a: Grupo de la plantilla al que asignar la variable
+#     b: Clave del array
+#     c: Consulta a realizar con la variable de sustitución "<>" (body) o "{}" (yaml)
+#     d: Asignacion de un parametro anteriormente establecido a una linea de consulta, ejemplo:
+#             param: dni  -->  insercion: [aaa, bbb, ccc, dni]
+# (PD: no se pueden descargar archivos de mas de 134217728 bytes)
+busqueda:
+  datos:
+    plantilla:
+      query:
+        query: "((cm:name:*))"
+        language: afts
+      filterQueries:
+        - query: "-TYPE:'folder'"
+    inserciones:
+      0: [filterQueries, query, "gvasan:pm_prueba_tipo_documento:'<>'", tipo]
+      1: [filterQueries, query, "gvasan:pm_paci_sip:'<>'"             , sip]
+      2: [filterQueries, query, "gvasan:pm_fic_creacion:'<>'"         , fecha]
+      3: [filterQueries, query, "modified:'<>'"                       , fechaMod]
+      4: [filterQueries, query, "TAG:'<>'"                            , tag]
+      5: [filterQueries, query, "PATH:'{}'"                           , PATH]
+      6: [filterQueries, query, "name:'<>'"                           , archivo]
+
+
+
+# Se defiene las propiedades para los campos que sean necesarios validar al subir un archivo
+# los campos a validar solo puedne tener las propiedades "tipo", "expresion_regular" y "formato"
+# - "tipo" -> esta propiedad indica si el campo es de algun tipo en espefico que la API puedan validar internamente
+#   solo existen dos tipos: "NIF/NIE" y "TIME"
+# - "expresiones_regulares" -> esta propieda sirve para definir expresiones regulares que el campo debe seguir para ser válido
+#   Para obtener más información sofre Expresiones Regulares en PHP visitar:
+#     - https://www.mclibre.org/consultar/php/lecciones/php-expresiones-regulares.html
+#   Para validar el correcto funcionamiento de las Expresiones Regulares visitar:
+#     - https://regex101.com/
+# - "formato" -> esta propiedad define el formato que deve seguir una fecha o una hora (Ej: 'd-m-Y' = día-mes-año, 'H:i:s' = hora:minutos:segundos)
+#   podemos realizar diferentes formatos que nos permitan controlar si queremos que las fechas o las horas sean completas o que solo tengan algunos
+#   campos. Ejemplo: 'm-Y' = mes y año o 'Y' = año \ 'H:i' = hora y minutos.
+#   Es importante escribir la 'Y' de año en mayusculas para que nos compruebe el año completo (2025) de lo contrario no comprobara solo
+#   los dos ultimos dígitos (25).
+# Todas las propiedades son opcionales y lo campos se validaran solo en vase a las propiedades que tengan defininas a excepción
+# de la propiedad "formato" la cual es exclusiva de las fechas y horas y es obligatorio su uso si se quire validar esta clase de campos.
+# Para los campos de tipo "TIME" tambien es recomendable el uso de la propiedad "expresion_regular" para asegurarnos de que la 
+# validación se haga correctamente.
+validaciones_campos:
+  # Se indica que el campo 'identidad' tendra una expresión regular
+  # que valida que solo se permitan números ("\d") los cuales se deben repetir
+  # una o más veces
+  identidad:
+    expresion_regular: /^\d+$/
+    
+  # Se indica que el campo 'fecha' sera de tipo "TIME", que su formato solo permitira la fecha completa
+  # y que tendra un expresión regular que valida que la fecha siga las siguientes normas:
+  # 1º Dos dígitos numericos los cuales el primero tiene que estar entre el 0 y el 2 y el segundo entre el 0 y el 9 o
+  #    el primer dígito siendo el 3 y el segundo el 0 o el 1.
+  # 2º Una "/".
+  # 3º Dos dígitos númericos siendo el primero 0 y el segunod un número entre el 1 y el 9 o siendo el primer número el 1
+  #    y el segundo un número entre el 0 y el 2.
+  # 4º Una "/".
+  # 5º Un año valido:
+  # - Empezara por el número 2 y estara seguido por 3 números o
+  # - empezara por el número 19 y estara seguido de 2 números
+  fecha:
+    tipo: TIME
+    formato: "d/m/Y"
+    expresion_regular: /^([0-2][0-9]|3[0-1])(\/)(0[1-9]|1[0-2])\2(2\d{3}$|19\d{2})$/
+  
+  # Se indica que el campo 'hora' tendra una expresión regular que valida que la hora sea valida y que siga el formato:
+  # 1º Dos dígitos.
+  # 2º Dos punts ':'.
+  # 3º Dos dígitos.
+  hora:
+    tipo: TIME
+    formato: "H:i"
+    expresion_regular: /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/

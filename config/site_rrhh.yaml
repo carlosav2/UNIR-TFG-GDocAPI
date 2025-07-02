@@ -1,0 +1,434 @@
+# site_<site>.yaml
+# Configuración del site. 
+# Define el comportamiento de la API para adaptarse al un site especifico.
+
+# Host del site
+server: servidor.domain
+
+# Origin configurado en Alfresco (CORS)
+origin: https://{server}
+
+# ID del nodo principal del site
+nodo_raiz_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxx
+
+# Path de busqueda
+path: app:company_home/st:sites/cm:rrhh/cm:documentLibrary//*
+
+# URLs autenticación, busqueda y core
+url_buscar: https://{server}/alfresco/api/-default-/public/search/versions/1/search
+url_rutas: https://{server}/alfresco/api/-default-/public/alfresco/versions/1/
+
+# Tipos de nodo folder (identidad, tipo de docuemento)
+nodo_tipos: 
+  - NODO_TIPO_ID
+  - NODO_TIPO_CARPETA
+
+# Si en el nombre del nodo de la carpeta ID está el nombre del trabajador/paciente
+# nos interesa extraerlo para setearlo en algún parámetro del archivo que subamos,
+# por lo que estableceremos este parámetro con el nombre de la key del POST. Sino, lo pondremos a 0.
+# Esto es útil ya que es posible que tengamos un nodo-folder tipo ID ya creado y que contenga 
+# el nombre de la persona. Si en el POST recibimos un nombre ligeramente distinto, si tenemos 
+# esta variable a 0, en el parámetro del archivo se pondrá un nombre diferente al de la carpeta.
+# P.e: capeta 12345678A_MARIA ANTONIA; recibimos por POST: nombre: M. ANTONIA
+# La función del código fuente normalizará el nombre en el mismo POST
+nombre_en_nodo_id: [1, nombre, _ , 1]
+
+# Nombre del nodo tipo ID (paciente, trabajador)
+# Array con texto a reemplazar y array con variables con cuyo valor se reemplaza [txt_buscado, variable]
+# La variables del código son las pasadas en el $_POST
+nodo_tipo_id_nombre:
+  - DNI_NOMBRE
+  - 0: [DNI, identidad]
+    1: [NOMBRE, nombre]
+
+# Parámetros del nodo tipo ID (paciente, trabajador...)
+# reemplazos contiene las keys a reemplazar. El formato es:
+# 0 - key a reemplazar
+# 1 - key de nivel inferior
+# 2 - variable del código que contiene el valor
+# 3 - se hace split del valor de la variable con el caracter definido
+# 4 - si se hace split, posicion en el array del valor
+nodo_tipo_id:
+  name:
+  nodeType: smt-rrhh:expediente-activo
+  properties:
+    smt-rrhh:dni: 
+    smt-rrhh:nombre: 
+  reemplazos:
+    0: [name,       "",               nodoNombre, "",   0]
+    1: [properties, smt-rrhh:dni,     nodoNombre, "_",  0]
+    2: [properties, smt-rrhh:nombre,  nodoNombre, "_",  1]
+
+
+# Parámetros del nodo tipo CARPETA (tipo documento...)
+# reemplazos contiene las keys a reemplazar. El formato es:
+# 0 - key a reemplazar
+# 1 - key de nivel inferior
+# 2 - variable del código que contiene el valor
+# 3 - sin uso
+# 4 - 0: la variable está definida en el código
+#   - 1: la variable está definida en el $_POST
+nodo_tipo_carpeta:
+  name: 
+  nodeType: cm:folder
+  reemplazos:
+    0: [name, "", nodoNombre, "", 0]
+
+
+# Parámetros a mapear de $_POST (necesarios para el formdata)
+form_data_post_params: ["nombre", "anyo"]
+
+# Parámetros del form data para enviar archivos
+# reemplazos contiene las keys a reemplazar. El formato es:
+#   0 - key a reemplazar
+#   1 - key de nivel inferior
+#   2 - variable del código que contiene el valor
+#   3 - se hace split del valor de la variable con el caracter definido
+#   4 - si se hace split, posicion en el array del valor
+#   5 - 0 es una variable del código; 1 es una variable del POST
+# Si es necesaria fecha de alfresco, es la variable "fecha_alf" del código 
+form_data_file:
+  nodeType: 
+  cm:title: 
+  autoRename: "true"
+  smt-rrhh:dni: 
+  smt-rrhh:nombre: 
+  smt-rrhh:anno: 
+  name: 
+  reemplazos:
+    0: [nodeType,         "", nodeType,       "" , 0, 0]
+    1: [cm:title,         "", nombreArchivo,  "" , 0, 0]
+    2: [smt-rrhh:dni,     "", identidad,      "" , 0, 1]
+    3: [smt-rrhh:nombre,  "", nombre,         "" , 0, 1]
+    4: [smt-rrhh:anno,    "", anyo,           "" , 0, 0]
+    5: [name,             "", nombreArchivo,  "" , 0, 0]
+
+# Parámetros del body para descargar un .zip con todos lo .pdf que coincidan con el filtro
+# reemplazos contiene las keys a reemplazar. El formato es:
+# 0 - key a reemplazar
+# 1 - key de nivel inferior
+# 2 - variable del código que contiene el valor
+# 3 - se hace split del valor de la variable con el caracter definido
+# 4 - si se hace split, posicion en el array del valor
+# json_query_zip:
+#   nodeType:
+#   smt-rrhh:dni:
+#   smt-rrhh:anno:
+#   reemplazos:
+#     0: [nodeType,       "", nodeType, "", 0]
+#     1: [smt-rrhh:dni,   "", dni,      "", 0]
+#     2: [smt-rrhh:anno,  "", anyo,     "", 0]
+
+json_query_zip:
+  query:
+  - query: "((cm:name:*))"
+  - language: afts
+  filterQueries:
+  - query: PATH:
+  - query: TYPE:
+  - query: "-TYPE:'cm:Folder'"
+  - query: smt-rrhh:dni:
+  - query: smt-rrhh:anno:
+  reemplazos:
+  0: [filterQueries, PATH, PATH, "", 0]
+  1: [filterQueries, TYPE, TYPE, "", 0]
+  2: [filterQueries, smt-rrhh:dni, DNI, "", 0]
+  3: [filterQueries, smt-rrhh:anno, ANYO, "", 0]
+
+
+
+# Nombre del archivo que se envia a Alfresco
+file_nombre: TIPO_ANYO.pdf
+
+# Reemplazos en el nombre de archivo por las variables definidas
+file_nombre_replace:
+  0: [TIPO, tipo_documento]
+  1: [ANYO, anyo]
+
+
+
+# Normaliza la parte del nombre, obtenido del $_POST, que se asignara al archivo.
+# Estructura:
+# > preproceso (opcional): array con procesados de texto previo a la clasificación: 
+#       - acentos: quita acentos
+#       - mayusculas: texto a mayúsculas
+#       - minusculas: texto a minusculas
+#       - capitalizer: capitalizar texto (primera mayúscula)
+# > tipo (opcional):  
+#       - diccionario con los valores correctos, según la key ($_POST[$tipo_documento])
+#         si no está seteado se adoptará el nombre del $_POST      
+#       - si se especifica como valor <procesado de texto> (p.e: <acentos>,<capitalizar>, etc...)
+#         realizará ese procesado al texto original y/o preprocesado, devolviendo ese resultado.
+normalizar_file_nombre:
+  preproceso:
+    - mayusculas
+    - acentos
+  tipo:
+    DNI: DNI
+    TITULO: Título
+    COLEGIACION: Colegiación
+    DECLARACION RESPONSABLE: Declaración responsable
+    CURRICULUM VITAE: Currículum Vitae
+    MOFIFICACION DE PLANTILLA: Modificación de plantilla
+    TOMAS DE POSESION: Tomas de posesión
+    FORMACION: Formación
+    SOLICITUD DE RETENCION IRPF: Solicitud de retención IRPF
+    COMISION DE SERVICIOS: Comisión de servicios
+    INTEGRACION: Integración
+    INCIDENCIAS DE NOMINA: Incidencias de nómina
+    DESCUENTOS EN NOMINA: Descuentos en nómina
+    REDUCCION DE JORNADA: Reducción de jornada
+    RESOLUCION DE COMPATIBILIDAD: Resolución de compatibilidad
+    CARRERA Y ANTIGÜEDAD: <capitalizar>
+    DATOS PERSONALES: <capitalizar>
+    BAJAS VOLUNTARIAS: <capitalizar>
+    LIBRO DE FAMILIA: <capitalizar>
+    REGISTRO CIVIL: <capitalizar>
+    TARJETA SANITARIA: <capitalizar>
+    NUMSS: <capitalizar>
+    DISCAPACIDAD: <capitalizar>
+    DATOS BANCARIOS: <capitalizar>
+    MODELO 145: <capitalizar>
+    NOMBRAMIENTOS: <capitalizar>
+    CONTRATOS: <capitalizar>
+    CESES: <capitalizar>
+    NOMBRAMIENTOS Y CESES: <capitalizar>
+    CAMBIO DE TURNO: <capitalizar>
+    CARRERA PROFESIONAL: <capitalizar>
+    TRIENIOS: <capitalizar>
+    MOVILIDAD INTERNA: <capitalizar>
+    GUARDIAS: <capitalizar>
+    CITACIONES Y EMPLAZAMIENTOS: <capitalizar>
+    CERTIFICADOS: <capitalizar>
+    INCAPACIDAD LABORAL: <capitalizar>
+    VIDA LABORAL: <capitalizar>
+    VACACIONES: <capitalizar>
+    PERMISOS: <capitalizar>
+    LICENCIAS: <capitalizar>
+    EXCEDENCIAS: <capitalizar>
+    LICENCIAS Y PERMISOS: <capitalizar>
+    PROCEDIMIENTO DE COMPATIBILIDAD: <capitalizar>
+    SALUD LABORAL: <capitalizar>
+    COMPATIBILIDAD: <capitalizar>
+    PROCEDIMIENTO ADMINISTRATIVO: <capitalizar>
+    PROCEDIMIENTO DISCIPLINARIO: <capitalizar>
+    PROCEDIMIENTO JUDICIAL: <capitalizar>
+    SENTENCIAS: <capitalizar>
+    RESOLUCION ADMINISTRATIVA: <capitalizar>
+
+# Obtiene el tipo de nodo para asignárselo al archivo.
+# Estructura:
+# > tipo: especificar array o diccionario
+# > parametro (obligatorio): parametro del $_POST que se usa para la comparación
+# > preproceso (opcional): array con procesados de texto previo a la clasificación: 
+#       - acentos: quita acentos
+#       - mayusculas: texto a mayúsculas
+#       - minusculas: texto a minusculas
+#       - capitalizer: capitalizar texto (primera mayúscula)
+# > correspondencia (obligatorio):  
+#       - array o diccionario con valores a comparar según el valor del parametro
+#       - Estructura:
+#         ARRAY: > Valor a devolver
+#                  - Array de valores a comparar (si lo encuentra devuelve el valor de su padre)
+#         DICCIONARIO : > Key de busqueda: valor a devolver
+obtener_tipodoc_nodetype:
+  tipo: diccionario
+  parametro: tipo_documento
+  preproceso:
+    - acentos
+    - mayusculas
+  correspondencia:
+      DNI: smt-rrhh:dni
+      TITULO: smt-rrhh:titulo
+      LIBRO DE FAMILIA: smt-rrhh:libroFamilia
+      REGISTRO CIVIL: smt-rrhh:registroCivil
+      TARJETA SANITARIA: smt-rrhh:tarjetaSanitaria
+      NUMSS: smt-rrhh:numss
+      COLEGIACION: smt-rrhh:colegiacion
+      DISCAPACIDAD: smt-rrhh:discapacidad
+      DATOS BANCARIOS: smt-rrhh:datosBancarios
+      MODELO 145: smt-rrhh:modelo145
+      DECLARACION RESPONSABLE: smt-rrhh:declaracionResponsable
+      CURRICULUM VITAE: smt-rrhh:cv
+      DATOS PERSONALES: smt-rrhh:otrosDatosPersonales
+      NOMBRAMIENTOS: smt-rrhh:nombramientos
+      CONTRATOS: smt-rrhh:contratos
+      CESES: smt-rrhh:cese
+      BAJAS VOLUNTARIAS: smt-rrhh:bajasVoluntarias
+      MOFIFICACION DE PLANTILLA: smt-rrhh:modificacionPlantilla
+      TOMAS DE POSESION: smt-rrhh:tomasPosesion
+      NOMBRAMIENTOS Y CESES: smt-rrhh:seleccionProvisionCeseSitAdmin
+      CARRERA PROFESIONAL: smt-rrhh:carreraProfesional
+      TRIENIOS: smt-rrhh:trienios
+      CARRERA Y ANTIGÜEDAD: smt-rrhh:antiguedad
+      FORMACION: smt-rrhh:formacion
+      CAMBIO DE TURNO: smt-rrhh:cambioTurno
+      MOVILIDAD INTERNA: smt-rrhh:movilidadInterna
+      SOLICITUD RETENCION IRPF: smt-rrhh:solicitudIRPF
+      GUARDIAS: smt-rrhh:guardias
+      COMISION DE SERVICIOS: smt-rrhh:comisionServicios 
+      CITACIONES Y EMPLAZAMIENTOS: smt-rrhh:citaciones
+      CERTIFICADOS: smt-rrhh:certificados
+      INTEGRACION: smt-rrhh:integracion
+      INCIDENCIAS DE NOMINA: smt-rrhh:incidenciasNomina
+      DESCUENTOS EN NOMINA: smt-rrhh:descuentosNomina
+      REDUCCION DE JORNADA: smt-rrhh:reduccionJornada
+      SALUD LABORAL: smt-rrhh:saludLaboral
+      INCAPACIDAD LABORAL:  smt-rrhh:incapacidad
+      VIDA LABORAL: smt-rrhh:documentosVidaLaboral
+      VACACIONES: smt-rrhh:vacaciones
+      PERMISOS: smt-rrhh:permisos
+      LICENCIAS: smt-rrhh:licencias
+      EXCEDENCIAS: smt-rrhh:excedencias
+      PROCEDIMIENTO DE COMPATIBILIDAD: smt-rrhh:procedimientoCompatibilidad
+      RESOLUCION DE COMPATIBILIDAD: smt-rrhh:resolucionCompatibilidad
+      COMPATIBILIDAD: smt-rrhh:compatibilidadLaboral
+      RESOLUCION ADMINISTRATIVA: smt-rrhh:resolucionAdministrativa
+      PROCEDIMIENTO DISCIPLINARIO: smt-rrhh:procedimientoDisciplinario
+      PROCEDIMIENTO ADMINISTRATIVO: smt-rrhh:situacionesAdministrativas
+      SENTENCIAS: smt-rrhh:sentencias
+      PROCEDIMIENTO JUDICIAL: smt-rrhh:reclamaciones
+      
+
+# Obtiene el nombre del nodo tipo carpeta (tipo de documento).
+# Estructura:
+# > parametro (obligatorio): parametro del $_POST que se usa para la comparación
+# > preproceso (opcional): array con procesados de texto previo a la clasificación: 
+#       - acentos: quita acentos
+#       - mayusculas: texto a mayúsculas
+#       - minusculas: texto a minusculas
+#       - capitalizer: capitalizar texto (primera mayúscula)
+# > tipo (opcional):  
+#       - array con array de valores a comparar según el valor del parametro
+#       - Estructura:
+#         > Valor a devolver
+#           - Array de valores a comparar (si lo encuentra devuelve el valor de su padre)
+obtener_tipodoc_nombre:
+  parametro: tipo_documento
+  preproceso:
+    - mayusculas
+    - acentos
+  tipo:
+    01.-Datos Personales:
+      - DNI
+      - TITULO
+      - LIBRO DE FAMILIA
+      - REGISTRO CIVIL
+      - TARJETA SANITARIA
+      - NUMSS
+      - COLEGIACION
+      - DISCAPACIDAD
+      - DATOS BANCARIOS
+      - MODELO 145
+      - DECLARACION RESPONSABLE
+      - CURRICULUM VITAE
+      - DATOS PERSONALES
+    02.-Nombramientos y Ceses:
+      - NOMBRAMIENTOS
+      - CONTRATOS
+      - CESES
+      - BAJAS VOLUNTARIAS
+      - MOFIFICACION DE PLANTILLA
+      - TOMAS DE POSESION
+      - NOMBRAMIENTOS Y CESES
+    03.-Vida Laboral:
+      - CARRERA PROFESIONAL
+      - TRIENIOS
+      - CARRERA Y ANTIGÜEDAD
+      - FORMACION
+      - CAMBIO DE TURNO
+      - MOVILIDAD INTERNA
+      - SOLICITUD RETENCION IRPF
+      - GUARDIAS
+      - COMISION DE SERVICIOS
+      - CITACIONES Y EMPLAZAMIENTOS
+      - CERTIFICADOS
+      - INTEGRACION
+      - INCIDENCIAS DE NOMINA
+      - DESCUENTOS EN NOMINA
+      - REDUCCION DE JORNADA
+      - SALUD LABORAL
+      - INCAPACIDAD LABORAL
+      - VIDA LABORAL
+      - VACACIONES
+      - PERMISOS
+      - LICENCIAS
+      - EXCEDENCIAS
+      - PROCEDIMIENTO DE COMPATIBILIDAD
+      - RESOLUCION DE COMPATIBILIDAD
+      - COMPATIBILIDAD
+    04.-Jurídico:
+      - RESOLUCION ADMINISTRATIVA
+      - PROCEDIMIENTO DISCIPLINARIO
+      - PROCEDIMIENTO ADMINISTRATIVO
+      - SENTENCIAS
+      - PROCEDIMIENTO JUDICIAL
+      
+
+# Se definen los campos de consulta que tendra la llamada a metadata y pdf
+# - "campo variable" -> Se define el nombre de la plantilla dentro de busqueda, este nombre se llamara luego desde la funcion (funcionBusquedaYaml)
+# - "plantilla" -> Se definen los valores constantes, es decir, la estrucutra de la consulta AFTS (Alfresco Full Text Search)
+# - "inserciones" -> Se definen en forma de array las variables de consulta con el siguiente formato
+#   - [a, b, c, d]
+#     a: Grupo de la plantilla al que asignar la variable
+#     b: Clave del array
+#     c: Consulta a realizar con la variable de sustitución "<>" (body) o "{}" (yaml)
+#     d: Asignacion de un parametro anteriormente establecido a una linea de consulta, ejemplo:
+#             param: dni  -->  insercion: [aaa, bbb, ccc, dni]
+# (PD: no se pueden descargar archivos de mas de 134217728 bytes)
+busqueda:
+  datos:
+    plantilla:
+      query:
+        query: "((cm:name:*))"
+        language: afts
+      filterQueries:
+        - query: "-TYPE:'folder'"
+    inserciones:
+      0: [filterQueries, query, "TYPE:'<>'"           , tipo,   "obtener_tipodoc_nodetype"]
+      1: [filterQueries, query, "smt-rrhh:dni:<>"     , dni]
+      2: [filterQueries, query, "smt-rrhh:nombre:<>"  , nombre]
+      3: [filterQueries, query, "smt-rrhh:anno:<>"    , anyo]
+      4: [filterQueries, query, "modified:'<>'"       , FECHA]
+      5: [filterQueries, query, "cm:title:'<>'"       , titulo]
+      6: [filterQueries, query, "TAG:'<>'"            , tag]
+      7: [filterQueries, query, "PATH:'{}'"           , PATH]
+
+
+# Se defiene las propiedades para los campos que sean necesarios validar al subir un archivo
+# los campos a validar solo puedne tener las propiedades "tipo", "expresion_regular" y "formato"
+# - "tipo" -> esta propiedad indica si el campo es de algun tipo en espefico que la API puedan validar internamente
+#   solo existen dos tipos: "NIF/NIE" y "TIME"
+# - "expresiones_regulares" -> esta propieda sirve para definir expresiones regulares que el campo debe seguir para ser válido
+#   Para obtener más información sofre Expresiones Regulares en PHP visitar:
+#     - https://www.mclibre.org/consultar/php/lecciones/php-expresiones-regulares.html
+#   Para validar el correcto funcionamiento de las Expresiones Regulares visitar:
+#     - https://regex101.com/
+# - "formato" -> esta propiedad define el formato que deve seguir una fecha o una hora (Ej: 'd-m-Y' = día-mes-año, 'H:i:s' = hora:minutos:segundos)
+#   podemos realizar diferentes formatos que nos permitan controlar si queremos que las fechas o las horas sean completas o que solo tengan algunos
+#   campos. Ejemplo: 'm-Y' = mes y año o 'Y' = año \ 'H:i' = hora y minutos.
+#   Es importante escribir la 'Y' de año en mayusculas para que nos compruebe el año completo (2025) de lo contrario no comprobara solo
+#   los dos ultimos dígitos (25).
+# Todas las propiedades son opcionales y lo campos se validaran solo en vase a las propiedades que tengan defininas a excepción
+# de la propiedad "formato" la cual es exclusiva de las fechas y horas y es obligatorio su uso si se quire validar esta clase de campos.
+# Para los campos de tipo "TIME" tambien es recomendable el uso de la propiedad "expresion_regular" para asegurarnos de que la 
+# validación se haga correctamente.
+validaciones_campos:
+  # Se indica que el campo 'identidad' tendra el tipo "NIF/NIE"
+  # y se validara con las funciones internas de la API
+  identidad:
+    tipo: NIF/NIE
+
+  # Se indica que el campo 'nombre' tendra una expresión regular que valida
+  # que solo admita letras mayúsculas, guines ("-") y espacios en blanco ("\s")
+  # los cuales se tienen que repetir una o más veces
+  nombre:
+    expresion_regular: /^[A-Za-z-\sñÑ]+$/
+
+  # Se indica que el campo 'anyo' sera de tipo "TIME", que su formato solo permitira el año
+  # y que tendra un expresión regular que valida que debe empezar el número 2 y esta seguido de 3 números
+  # o que empiece por el número 19 y este segido de 2 números
+  anyo:
+    tipo: TIME
+    formato: "Y"
+    expresion_regular: /^2\d{3}$|^19\d{2}$/

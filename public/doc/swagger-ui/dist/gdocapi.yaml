@@ -1,0 +1,1088 @@
+openapi: 3.0.0
+info:
+  title: GDocAPI
+  description: | 
+                Manual de consumo de la API REST medidora con la API de Alfresco \
+                \
+                [ Base URL: /gdocapi/public ]
+  contact:
+    name: Servicio Informática Depto. San Juan
+    email: tic_aplicaciones_santjoan@gva.es
+  version: '2.0'
+servers:
+  - url: https://vvd17develop.cs.san.gva.es/gdocapi/public/
+    description: PRE
+tags:
+  - name: auth
+    description: Autenticación en GDocAPI
+  - name: tag
+    description: Acciones sobre tags
+  - name: nodo
+    description: Acciones sobre nodos
+  - name: file
+    description: Acciones sobre ficheros
+  - name: documentacion
+    description: Documentación swagger
+  
+
+paths:
+  /auth:
+    post:
+      tags:
+        - auth
+      summary: Obtener token
+      description: |
+        Obtener token de la esta API, requerido para su consumo.\
+        Necesario que los administradores de la API le proporcionen las credenciales necesarias
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              usuario: nombreusuario
+              passwd: password
+      responses:
+        '200':
+          description: Token para el consumo de la API
+          content:
+            application/json:
+              example:
+                status: success
+                message: Token obtenido correctamente
+                data: xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+              
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en AldenMediatory
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación 
+    put:
+      tags:
+        - auth
+      summary: Actualizar token con refresh token
+      description: |
+        Obtener un nuevo token usando el refresh token.\
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              refresh_token: token refresh
+      responses:
+        '200':
+          description: Tokens actualizados
+          content:
+            application/json:
+              example:
+                status: success
+                message: Token renovado correctamente
+                data: xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+              
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en AldenMediatory
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error al generar token
+    
+  /tag:
+    get:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - tag
+      summary: Obtener todos los tags
+      description: |
+        Obtener todos los tags del site
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Tags obtenidos con éxito
+                  data:
+                  - tag: tagejemplo1
+                    id: f22ed754-9d79-4ff6-9ed4-a0d4e2292708
+                  - tag: tagejemplo2
+                    id: 744b075a-b9af-433fd-a2ef7-6454fd532f
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+
+  /tag/nodo/{idNodo}:
+    get:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - tag
+      summary: Obtener los tags de un nodo
+      description: |
+        Obtener todos los tags de un nodo
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+        - name: idNodo
+          in: path
+          required: true
+          description: ID del nodo
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Tags obtenidos con éxito
+                  data:
+                  - tag: tagejemplo1
+                    id: f22ed754-9d79-4ff6-9ed4-a0d4e2292708
+                  - tag: tagejemplo2
+                    id: 744b075a-b9af-433fd-a2ef7-6454fd532f
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+  
+    post:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - tag
+      summary: Asignar tag a nodo
+      description: |
+        Asignar un tag a un nodo
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+        - name: idNodo
+          in: path
+          required: true
+          description: ID del nodo
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tag: 
+                  type: string
+                  example: prueba1
+                site:
+                  type: string
+                  example: rrhh
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Tag asignado
+                  data:
+                    tag: prueba1
+                    id: 563abeaf-5e2d-45bb-b1c2-c4c6c207be32
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+  
+    delete:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - tag
+      summary: Eliminar tag de nodo [NO FUNCIONA]
+      description: |
+        Eliminar un tag de un nodo
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+        - name: idNodo
+          in: path
+          required: true
+          description: ID del nodo
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Tag asignado
+                  data:
+                    tag: prueba1
+                    id: 563abeaf-5e2d-45bb-b1c2-c4c6c207be32
+                  
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+  
+  /tag/nodo/{idNodo}/forzar:
+    post:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - tag
+      summary: Fuerza (=crea) la asignacion de tag a nodo
+      description: |
+        Fuerza (=crea) la asignacion de un tag a un nodo
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+        - name: idNodo
+          in: path
+          required: true
+          description: ID del nodo
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tag: 
+                  type: string
+                  example: prueba1
+                site:
+                  type: string
+                  example: rrhh
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Tag asignado
+                  data:
+                    tag: prueba1
+                    id: 563abeaf-5e2d-45bb-b1c2-c4c6c207be32
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+  
+  /nodo/{idNodo}:
+    get:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - nodo
+      summary: Obtiene la información de un nodo por id
+      description: |
+        Obtiene la información de un nodo por id
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+        - name: idNodo
+          in: path
+          required: true
+          description: ID del nodo
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Datos obtenidos con éxito
+                  data:
+                    isFile: true
+                    createdByUser:
+                      id: xxxxx
+                      displayName: Administrator
+                    modifiedAt: 2024-11-29T17:14:12.677+0000
+                    nodeType: smt-rrhh:saludLaboral
+                    content:
+                      mimeType: application/pdf
+                      mimeTypeName: Adobe PDF Document
+                      sizeInBytes: 225541
+                      encoding: UTF-8
+                    parentId: xxxx-xxx-xxx-xxxxx-xx
+                    aspectNames:
+                      - rn:renditioned
+                      - cm:versionable
+                      - digitallis:versioning
+                      - smt-rrhh:asp-saludLaboral
+                      - digitallis:cliente
+                      - cm:thumbnailModification
+                      - digitallis:documento
+                      - cm:titled
+                      - digitallis:inboxProcessed
+                      - cm:auditable
+                      - smt-rrhh:asp-documento-anual
+                      - smt-rrhh:asp-documento
+                      - cm:author
+                    createdAt: 2024-11-29T17:14:12.394+0000
+                    isFolder: false
+                    modifiedByUser:
+                      id: xxxx
+                      displayName: Administrator
+                    name: SALUD LABORAL_2024-2.pdf
+                    id: xxxxx-xxxx-xxx-xxxx-xxxxxxxx
+                    properties:
+                      cm:title: SALUD LABORAL_2024.pdf
+                      smt-rrhh:anno: '2024'
+                      cm:versionType: MAJOR
+                      cm:versionLabel: '1.0'
+                      cm:author: xxxxxxx
+                      digitallis:versioningAction: NUEVO_DOCUMENTO
+                      smt-rrhh:nombre: xxxxxxx
+                      smt-rrhh:dni: xxxxxxxxxx
+                      cm:lastThumbnailModification:
+                        - doclib:xxxxxxxxx
+                  
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+  
+  /nodo/nombre/{nombre}:
+    get:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - nodo
+      summary: Obtiene la información de un nodo por nombre
+      description: |
+        Obtiene la información de un nodo por nombre
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+        - name: nombre
+          in: path
+          required: true
+          description: nombre del nodo
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Datos obtenidos con éxito
+                  data:
+                    - createdAt: 2024-04-15T08:13:59.010+0000
+                      isFolder: true
+                      search:
+                        score: 1
+                      isFile: false
+                      createdByUser:
+                        id: xxxx
+                        displayName: xxxxx
+                      modifiedAt: 2024-11-29T16:40:17.987+0000
+                      modifiedByUser:
+                        id: xxxxx
+                        displayName: Administrator
+                      name: NIF_NOMBRE
+                      location: nodes
+                      id: xxxx-xxxx-xxx-xxxx-xxxxx
+                      nodeType: smt-rrhh:expediente-activo
+                      parentId: xxxx-xxxx-xxx-xxxx-xxxxx
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+  
+  /nodo/nombre/{nombre}/{idNodo}:
+    get:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - nodo
+      summary: Buscar por nombre el nodo hijo de un nodo padre (id)
+      description: |
+        Buscar por nombre el nodo hijo de un nodo padre (id)
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+        - name: nombre
+          in: path
+          required: true
+          description: nombre del nodo hijo
+          schema:
+            type: string
+        - name: idNodo
+          in: path
+          required: true
+          description: id del nodo padre
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Datos obtenidos con éxito
+                  data:
+                    - createdAt: 2024-04-15T08:13:59.010+0000
+                      isFolder: true
+                      search:
+                        score: 1
+                      isFile: false
+                      createdByUser:
+                        id: xxxx
+                        displayName: xxxxx
+                      modifiedAt: 2024-11-29T16:40:17.987+0000
+                      modifiedByUser:
+                        id: xxxxx
+                        displayName: Administrator
+                      name: NIF_NOMBRE
+                      location: nodes
+                      id: xxxx-xxxx-xxx-xxxx-xxxxx
+                      nodeType: smt-rrhh:expediente-activo
+                      parentId: xxxx-xxxx-xxx-xxxx-xxxxx
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+  
+  /nodo/nombre/{nombre}/id:
+    get:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - nodo
+      summary: Buscar la id de un nodo por nombre
+      description: |
+        Buscar la id de un nodo por nombre
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+        - name: nombre
+          in: path
+          required: true
+          description: nombre del nodo hijo
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Datos obtenidos con éxito
+                  data:
+                    - createdAt: 2024-04-15T08:13:59.010+0000
+                      isFolder: true
+                      search:
+                        score: 1
+                      isFile: false
+                      createdByUser:
+                        id: xxxx
+                        displayName: xxxxx
+                      modifiedAt: 2024-11-29T16:40:17.987+0000
+                      modifiedByUser:
+                        id: xxxxx
+                        displayName: Administrator
+                      name: NIF_NOMBRE
+                      location: nodes
+                      id: xxxx-xxxx-xxx-xxxx-xxxxx
+                      nodeType: smt-rrhh:expediente-activo
+                      parentId: xxxx-xxxx-xxx-xxxx-xxxxx
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+  
+  /nodo/{idNodo}/hijo:
+    post:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - nodo
+      summary: Crea un nodo dentro de un nodo padre (id)
+      description: |
+        Crea un nodo dentro de un nodo padre (id)
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+        - name: idNodo
+          in: path
+          required: true
+          description: ID del nodo
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: 
+                  type: string
+                  example: NIF_NOMBRE
+                tipo:
+                  type: string
+                  example: NODO_TIPO_ID
+                site:
+                  type: string
+                  example: rrhh
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Tag asignado
+                  data:
+                    status: success
+                    message: Nodo creado con exito
+                    data:
+                      - createdAt: 2024-04-15T08:13:59.010+0000
+                        isFolder: true
+                        search:
+                          score: 1
+                        isFile: false
+                        createdByUser:
+                          id: xxxx
+                          displayName: xxxxx
+                        modifiedAt: 2024-11-29T16:40:17.987+0000
+                        modifiedByUser:
+                          id: xxxxx
+                          displayName: Administrator
+                        name: NIF_NOMBRE
+                        location: nodes
+                        id: xxxx-xxxx-xxx-xxxx-xxxxx
+                        nodeType: smt-rrhh:expediente-activo
+                        parentId: xxxx-xxxx-xxx-xxxx-xxxxx
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+  
+  
+  /file:
+    post:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - file
+      summary: Subir documento
+      description: |
+        Subir documento al site
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                identidad:
+                  type: string
+                  description: "NIF del trabajador en formato 12345678A o X1234567A"
+                tipo_documento:
+                  type: string
+                  description: "ejemplo: Contratos, Ceses..."
+                nombre:
+                  type: string
+                  description: "Nombre completo del trabajador en formato NOMBRE APELLIDO1 APELLIDO2"
+                anno:
+                  type: string
+                  description: "Formato YYYY"
+                archivo:
+                  type: object
+                  format: binary
+                  description: "Archivo a enviar a Alfresco"
+                site:
+                  type: string
+                  description: rrhh, clinico...
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 
+                  status: success
+                  message: Archivo subido con exito
+                  data:
+                    isFile: true
+                    createdByUser:
+                      id: xxxxx
+                      displayName: Administrator
+                    modifiedAt: 2024-11-29T17:14:12.677+0000
+                    nodeType: smt-rrhh:saludLaboral
+                    content:
+                      mimeType: application/pdf
+                      mimeTypeName: Adobe PDF Document
+                      sizeInBytes: 225541
+                      encoding: UTF-8
+                    parentId: xxxx-xxx-xxx-xxxxx-xx
+                    aspectNames:
+                      - rn:renditioned
+                      - cm:versionable
+                      - digitallis:versioning
+                      - smt-rrhh:asp-saludLaboral
+                      - digitallis:cliente
+                      - cm:thumbnailModification
+                      - digitallis:documento
+                      - cm:titled
+                      - digitallis:inboxProcessed
+                      - cm:auditable
+                      - smt-rrhh:asp-documento-anual
+                      - smt-rrhh:asp-documento
+                      - cm:author
+                    createdAt: 2024-11-29T17:14:12.394+0000
+                    isFolder: false
+                    modifiedByUser:
+                      id: xxxx
+                      displayName: Administrator
+                    name: SALUD LABORAL_2024-2.pdf
+                    id: xxxxx-xxxx-xxx-xxxx-xxxxxxxx
+                    properties:
+                      cm:title: SALUD LABORAL_2024.pdf
+                      smt-rrhh:anno: '2024'
+                      cm:versionType: MAJOR
+                      cm:versionLabel: '1.0'
+                      cm:author: xxxxxxx
+                      digitallis:versioningAction: NUEVO_DOCUMENTO
+                      smt-rrhh:nombre: xxxxxxx
+                      smt-rrhh:dni: xxxxxxxxxx
+                      cm:lastThumbnailModification:
+                        - doclib:xxxxxxxxx
+        '400':
+          description: Error al subir el archivo
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error al subir el archivo
+  /file/{idNodo}:
+    get:
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      tags:
+        - file
+      summary: Obtener un archivo por id
+      description: |
+        Obtener un archivo por id
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          description: | 
+            Origen del request.\
+            Necesario que los administradores de la API registren su dominio.
+          schema:
+            type: string
+        - in: header
+          name: Site
+          required: true
+          description: | 
+            Site a consumir (rrhh, clinico,...)
+          schema:
+            type: string
+        - name: idNodo
+          in: path
+          required: true
+          description: ID del nodo
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tags
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Parámetros erroneos
+          content:
+            application/json:
+              example:
+                status: error
+                message: Parámetros erroneos
+        '401':
+          description: Error de autenticación en Alden
+          content:
+            application/json:
+              example:
+                status: error
+                message: Error de autenticación en Alden
+
+  /documentacion:
+    get:
+      tags:
+        - documentacion
+      summary: Ver esta documentación
+      description: |
+        Ver esta documentación
+      responses:
+        '302':
+          description: Redirección a la docuemntación
+          headers:
+            Location:
+              description: /doc/swagger-ui
+              schema:
+                type: string
+                format: uri
+      
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >-
+        Token con prefijo "Bearer:"  p.e: "Bearer abcde12345"
+    basicAuth:
+      type: http
+      scheme: basic
+  
+        
